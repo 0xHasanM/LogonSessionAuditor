@@ -12,7 +12,7 @@ This tool parses Windows EVTX logs to extract login and logout sessions from a s
 
 - Python 3.7+
 - [tkcalendar](https://pypi.org/project/tkcalendar/)
-- [pyevtx](https://pypi.org/project/pyevtx/)
+- [evtx](https://pypi.org/project/evtx/)
 - [lxml](https://pypi.org/project/lxml/)
 
 Install the required packages using:
