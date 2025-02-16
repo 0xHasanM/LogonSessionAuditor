@@ -56,7 +56,7 @@ def process_logs_background(evtx_file, action_time, csv_filename="output.csv"):
     log_message("Starting EVTX processing...")
 
     # Phase 1: Collect events
-    login_events = []   # List of dicts: { "target_logon_id", "target_user", "target_domain", "login_time" }
+    login_events = []   # List of dicts with login details
     logout_events = {}  # Dict mapping target_logon_id -> logout_time (as a datetime)
 
     # Precompile XPath queries.
@@ -66,6 +66,11 @@ def process_logs_background(evtx_file, action_time, csv_filename="output.csv"):
     xpath_tli = etree.XPath(".//ns:Data[@Name='TargetLogonId']", namespaces=ns)
     xpath_user = etree.XPath(".//ns:Data[@Name='TargetUserName']", namespaces=ns)
     xpath_domain = etree.XPath(".//ns:Data[@Name='TargetDomainName']", namespaces=ns)
+    # New XPath queries for additional details.
+    xpath_computer = etree.XPath(".//ns:Computer", namespaces=ns)
+    xpath_logon_type = etree.XPath(".//ns:Data[@Name='LogonType']", namespaces=ns)
+    xpath_ip_address = etree.XPath(".//ns:Data[@Name='IpAddress']", namespaces=ns)
+    xpath_ip_port = etree.XPath(".//ns:Data[@Name='IpPort']", namespaces=ns)
 
     records_processed = 0
 
@@ -111,15 +116,35 @@ def process_logs_background(evtx_file, action_time, csv_filename="output.csv"):
                     target_logon_id = tli_elements[0].text
                     if not target_logon_id or target_logon_id == "0x3e7":
                         continue
+
                     user_elements = xpath_user(root_xml)
                     target_user = user_elements[0].text if user_elements else ""
+
                     domain_elements = xpath_domain(root_xml)
                     target_domain = domain_elements[0].text if domain_elements else ""
+
+                    # Extract additional fields.
+                    computer_elements = xpath_computer(root_xml)
+                    computer_name = computer_elements[0].text if computer_elements else ""
+
+                    logon_type_elements = xpath_logon_type(root_xml)
+                    logon_type = logon_type_elements[0].text if logon_type_elements else ""
+
+                    ip_address_elements = xpath_ip_address(root_xml)
+                    ip_address = ip_address_elements[0].text if ip_address_elements else ""
+
+                    ip_port_elements = xpath_ip_port(root_xml)
+                    ip_port = ip_port_elements[0].text if ip_port_elements else ""
+
                     login_events.append({
                         "target_logon_id": target_logon_id,
                         "target_user": target_user,
                         "target_domain": target_domain,
-                        "login_time": ev_time  # store as datetime
+                        "login_time": ev_time,  # stored as datetime
+                        "computer": computer_name,
+                        "logon_type": logon_type,
+                        "ip_address": ip_address,
+                        "ip_port": ip_port,
                     })
             # Process logout events (EventID 4634 or 4647)
             elif event_id in ["4634", "4647"]:
@@ -149,18 +174,29 @@ def process_logs_background(evtx_file, action_time, csv_filename="output.csv"):
     try:
         with open(csv_filename, "w", newline="") as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(["TargetLogonId", "TargetUserName", "TargetDomainName", "Login Time (UTC)", "Logout Time (UTC)"])
+            # Updated CSV header with new details.
+            writer.writerow([
+                "TargetLogonId", "TargetUserName", "TargetDomainName", "ComputerName",
+                "LogonType", "IpAddress", "IpPort", "Login Time (UTC)", "Logout Time (UTC)",
+                "Session Length"
+            ])
             for login in login_events:
                 tid = login["target_logon_id"]
                 # Only output sessions that have a corresponding logout event.
                 if tid not in logout_events:
-                    continue  
+                    continue
+                session_length = logout_events[tid] - login["login_time"]
                 row = [
                     tid,
                     login["target_user"],
                     login["target_domain"],
+                    login["computer"],
+                    login["logon_type"],
+                    login["ip_address"],
+                    login["ip_port"],
                     login["login_time"].isoformat(),
-                    logout_events[tid].isoformat()
+                    logout_events[tid].isoformat(),
+                    str(session_length)
                 ]
                 writer.writerow(row)
         log_message("CSV file written successfully.")
@@ -174,11 +210,17 @@ def process_logs_background(evtx_file, action_time, csv_filename="output.csv"):
         tid = login["target_logon_id"]
         if tid not in logout_events:
             continue
+        session_length = logout_events[tid] - login["login_time"]
         summary += (f"TargetLogonId: {tid}, "
                     f"TargetUserName: {login['target_user']}, "
                     f"TargetDomainName: {login['target_domain']}, "
+                    f"ComputerName: {login['computer']}, "
+                    f"LogonType: {login['logon_type']}, "
+                    f"IpAddress: {login['ip_address']}, "
+                    f"IpPort: {login['ip_port']}, "
                     f"Login Time: {login['login_time'].isoformat()}, "
-                    f"Logout Time: {logout_events[tid].isoformat()}\n")
+                    f"Logout Time: {logout_events[tid].isoformat()}, "
+                    f"Session Length: {str(session_length)}\n")
     
     root.after(0, lambda: output_text.insert(tk.END, summary + f"\nProcessing complete. Output written to {csv_filename}\n"))
 
