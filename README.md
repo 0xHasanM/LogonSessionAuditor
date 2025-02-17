@@ -22,7 +22,7 @@ pip install -r requirements.txt
 ```
 
 ## Executable Version
-Web-based Flask app is available in the [latest release](https://github.com/IRB0T/Logon-Session-Auditor/releases/tag/v2.0).
+Web-based Flask app is available in the [latest release](https://github.com/0xHasanM/LogonSessionAuditor/releases).
 
 ## Contributing
 Contributions are welcome! Feel free to fork the repository, make improvements, and submit a pull request.
