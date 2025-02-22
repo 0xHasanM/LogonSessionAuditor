@@ -9,8 +9,23 @@ This tool parses Windows EVTX logs to extract login and logout sessions from a s
 - Output the correlated sessions to a CSV file
 
 ## ToDo
-- [ ] Parse RDP Logs
-- [ ] Parse User Profile Service Logs (Event ID 5 "Load of user related registry hives")
+- [ ] [Parse RDP Logs](https://1286158324-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-MO79pt4NiZPFhlGCglR%2Fuploads%2Fjf7Sw5vieeT2M6bRt4w2%2FRDP_DFIR.pdf?alt=media&token=55b6337c-2a18-43de-8761-73dda2b5c222)
+- [ ] Parse User Profile Service Logs
+  - [ ] Event ID 5 "Load of user related registry hives"
+  - [ ] Event ID 67
+- [ ] Parse Group-Policy Logs
+  - [ ] Event ID 5310
+  - [ ] Event ID 4005
+  - [ ] Event ID 4018
+  - [ ] Event ID 5017
+  - [ ] Event ID 4001
+  - [ ] Event ID 8001 (subtract time take from event time))
+  - [ ] Event ID 8005 (subtract time take from event time))
+  - [ ] Event ID 5018 (subtract time take from event time))
+- [ ] Parse Known-Folders API Logs
+  - [ ] Event ID 1002 filter on username in path
+- [ ] Parse Software Registry Hive
+  - [ ] Creation of "CreateExplorerShellUnelevatedTask" task
 - [ ] Parse Multiple Machines at once.
 - [ ] Provide check box to show Session with no logout events (useful when identifying RDP activity while Security event log is cleared)
 
