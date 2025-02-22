@@ -10,6 +10,7 @@ This tool parses Windows EVTX logs to extract login and logout sessions from a s
 
 ## ToDo
 - [ ] Parse RDP Logs
+- [ ] Parse User Profile Service Logs (Event ID 5 "Load of user related registry hives")
 - [ ] Parse Multiple Machines at once.
 - [ ] Provide check box to show Session with no logout events (useful when identifying RDP activity while Security event log is cleared)
 
