@@ -8,6 +8,11 @@ This tool parses Windows EVTX logs to extract login and logout sessions from a s
 - Correlate sessions based on a specified UTC time
 - Output the correlated sessions to a CSV file
 
+## ToDo
+- [ ] Parse RDP Logs
+- [ ] Parse Multiple Machines at once.
+- [ ] Provide check box to show Session with no logout events (useful when identifying RDP activity while Security event log is cleared)
+
 ## Requirements
 
 - Python 3.7+
